@@ -1,0 +1,14 @@
+# Railway config-as-code (mdparser-worker)
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "ALWAYS"
+numReplicas = 1
+sleepApplication = false
+deploymentTimeout = 600
+
+
