@@ -48,8 +48,19 @@ app.post('/parse', async (req: Request, res: Response) => {
     // Resolve ścieżkę do mdparser/dist/src/mdparser.js
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const parserPath = resolve(__dirname, '../mdparser/dist/src/mdparser.js');
-    const { parseAndSave } = await import(parserPath);
+    const parserPath = resolve(__dirname, '../mdparser/dist/src/mdparser.cjs');
+    let parseAndSave: any;
+    try {
+      const mod = await import(parserPath);
+      // @ts-ignore
+      parseAndSave = mod.parseAndSave || (mod.default && mod.default.parseAndSave);
+    } catch {
+      const cjsPath = resolve(__dirname, '../mdparser/dist/src/mdparser.js');
+      // @ts-ignore
+      const mod = await import(cjsPath);
+      // @ts-ignore
+      parseAndSave = mod.parseAndSave || (mod.default && mod.default.parseAndSave);
+    }
 
     const result = await parseAndSave(htmlInput, supabase, {
       marketplace_id: Number(marketplace_id) || 1,
