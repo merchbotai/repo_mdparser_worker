@@ -1,6 +1,16 @@
-FROM n8nio/n8n:latest
-USER root
-RUN apk add --no-cache tzdata curl jq
-USER node
-ENV N8N_PORT=5678
-CMD ["sh","-lc","export N8N_PORT=${PORT:-5678}; n8n start"]
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json tsconfig.json ./
+RUN npm install
+COPY src ./src
+COPY mdparser ./mdparser
+RUN npx tsc
+
+FROM node:20-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
+EXPOSE 8080
+CMD ["node", "dist/server.js"]
