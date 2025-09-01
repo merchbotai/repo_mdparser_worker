@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 
 const app = express();
 app.use(express.json({ limit: '5mb' }));
@@ -45,22 +46,14 @@ app.post('/parse', async (req: Request, res: Response) => {
     const supabaseKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Resolve ścieżkę do mdparser/dist/src/mdparser.js
+    // Resolve ścieżkę do mdparser/dist/src/mdparser.js i załaduj przez CommonJS
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const parserPath = resolve(__dirname, '../mdparser/dist/src/mdparser.cjs');
-    let parseAndSave: any;
-    try {
-      const mod = await import(parserPath);
-      // @ts-ignore
-      parseAndSave = mod.parseAndSave || (mod.default && mod.default.parseAndSave);
-    } catch {
-      const cjsPath = resolve(__dirname, '../mdparser/dist/src/mdparser.js');
-      // @ts-ignore
-      const mod = await import(cjsPath);
-      // @ts-ignore
-      parseAndSave = mod.parseAndSave || (mod.default && mod.default.parseAndSave);
-    }
+    const parserPath = resolve(__dirname, '../mdparser/dist/src/mdparser.js');
+    const require = createRequire(import.meta.url);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = require(parserPath);
+    const parseAndSave = mod.parseAndSave || (mod.default && mod.default.parseAndSave);
 
     const result = await parseAndSave(htmlInput, supabase, {
       marketplace_id: Number(marketplace_id) || 1,
