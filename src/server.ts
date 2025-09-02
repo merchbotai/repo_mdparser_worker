@@ -49,7 +49,7 @@ app.post('/parse', async (req: Request, res: Response) => {
     // Resolve ścieżkę do mdparser/dist/src/mdparser.js i załaduj przez CommonJS
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const parserPath = resolve(__dirname, '../mdparser/dist/src/mdparser.js');
+    const parserPath = resolve(__dirname, '../mdparser/dist/src/mdparser.cjs');
     const require = createRequire(import.meta.url);
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const mod = require(parserPath);
