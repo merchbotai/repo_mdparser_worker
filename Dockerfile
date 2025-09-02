@@ -5,6 +5,8 @@ RUN npm install
 COPY src ./src
 COPY mdparser ./mdparser
 RUN npx tsc
+# Ensure mdparser/dist is treated as CommonJS
+RUN echo '{"type":"commonjs"}' > mdparser/dist/package.json
 
 FROM node:20-alpine AS runtime
 WORKDIR /app
